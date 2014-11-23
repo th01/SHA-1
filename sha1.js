@@ -1,7 +1,6 @@
 (function(){
     var root = this;
 
-    //消息填充位，补足长度。
     function fillString(str){
         var blockAmount = ((str.length + 8) >> 6) + 1,
             blocks = [],
@@ -16,10 +15,10 @@
         blocks[i >> 2] |= 0x80 << (24 - (i & 3) * 8);
         blocks[blockAmount * 16 - 1] = str.length * 8;
 
+        console.log(blocks);
         return blocks;
     }
 
-    //将输入的二进制数组转化为十六进制的字符串。
     function binToHex(binArray){
         var hexString = "0123456789abcdef",
             str = "",
@@ -33,7 +32,6 @@
         return str;
     }
 
-    //核心函数，输出为长度为5的number数组，对应160位的消息摘要。
     function coreFunction(blockArray){
         var w = [],
             a = 0x67452301,
@@ -50,14 +48,14 @@
             i,
             j;
 
-        for(i = 0; i < blockArray.length; i += 16){  //每次处理512位 16*32
+        for(i = 0; i < blockArray.length; i += 16){
             olda = a;
             oldb = b;
             oldc = c;
             oldd = d;
             olde = e;
 
-            for(j = 0; j < 80; j++){  //对每个512位进行80步操作
+            for(j = 0; j < 80; j++){
                 if(j < 16){
                     w[j] = blockArray[i + j];
                 }else{
@@ -81,7 +79,6 @@
         return [a, b, c, d, e];
     }
 
-    //根据t值返回相应得压缩函数中用到的f函数。
     function ft(t, b, c, d){
         if(t < 20){
             return (b & c) | ((~b) & d);
@@ -94,14 +91,12 @@
         }
     }
 
-    //根据t值返回相应得压缩函数中用到的K值。
     function kt(t){
         return (t < 20) ?  0x5A827999 :
                 (t < 40) ? 0x6ED9EBA1 :
                 (t < 60) ? 0x8F1BBCDC : 0xCA62C1D6;
     }
 
-    //模2的32次方加法，因为JavaScript的number是双精度浮点数表示，所以将32位数拆成高16位和低16位分别进行相加
     function modPlus(x, y){
         var low = (x & 0xFFFF) + (y & 0xFFFF),
             high = (x >> 16) + (y >> 16) + (low >> 16);
@@ -109,12 +104,10 @@
         return (high << 16) | (low & 0xFFFF);
     }
 
-    //对输入的32位的num二进制数进行循环左移 ,因为JavaScript的number是双精度浮点数表示，所以移位需需要注意
     function cyclicShift(num, k){
         return (num << k) | (num >>> (32 - k));
     }
 
-    //主函数根据输入的消息字符串计算消息摘要，返回十六进制表示的消息摘要
     function sha1(s){
         return binToHex(coreFunction(fillString(s)));
     }
@@ -134,3 +127,4 @@
     }
 
 }).call(this);
+
